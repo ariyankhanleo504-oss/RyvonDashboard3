@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ryvon Dashboard & Register Rules</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@600&family=Orbitron:wght@700&display=swap');
+    html, body {
+      margin: 0; padding: 0; width: 100%; min-height: 100%;
+      background: #000; color: white; font-family: 'Rajdhani', sans-serif;
+      overflow-x: hidden; overflow-y: auto;
+    }
+    .container { width: 90%; max-width: 900px; margin: 0 auto; text-align: center; }
+
+    /* Dashboard */
+    #dashboard { display: block; padding-top: 50px; position: relative; }
+    .company-name { font-family: 'Orbitron', sans-serif; font-size: 70px; margin-bottom: 10px; letter-spacing: 3px; }
+    .platform { font-size: 24px; margin-bottom: 25px; }
+    h3 { font-size: 22px; margin: 15px 0; }
+    .income-heading { font-size: 34px; margin: 20px 0; }
+    ul { list-style: none; padding-left: 0; text-align: left; margin-bottom: 30px; }
+    ul li { margin: 8px 0; padding-left: 20px; position: relative; }
+    ul li::before { content: "•"; position: absolute; left: 0; color: #4CAF50; }
+
+    /* Register button */
+    .register-button {
+      display: inline-block; padding: 12px 80px; margin-bottom: 30px;
+      background-color: #111; color: white; font-size: 20px; font-weight: 600;
+      text-decoration: none; cursor: pointer; border: none;
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2); transition: all 0.2s;
+    }
+    .register-button:hover { background-color: #222; }
+    .register-button:active { transform: scale(0.98); }
+
+    /* Register Rules */
+    #registerRules {
+      display: none; text-align: left; margin-top: 20px;
+      background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+      position: relative; 
+    }
+    #registerRules h1 { text-align: center; margin-bottom: 20px; font-family: 'Orbitron'; font-size: 50px; }
+    .back-button {
+      display: inline-block; padding: 10px 40px; background: #555; color: white;
+      font-size: 18px; font-weight: 600; border-radius: 8px; text-decoration: none;
+      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: all 0.2s; margin-top: 20px;
+    }
+    .back-button:hover { background-color: #777; }
+    .back-button:active { transform: scale(0.98); }
+
+    /* Language icon common styles */
+    .language-icon {
+      position: fixed; /* এটি ড্যাশবোর্ড এবং রেজিস্টার রুলস-এর ভাষা আইকনকে স্ক্রিনের সাথে ফিক্সড রাখবে */
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2); cursor: pointer; display: flex; align-items: center; gap: 6px;
+      color: white; z-index: 2000; /* নিশ্চিত করার জন্য যে এটি অন্যান্য উপাদানের উপরে থাকে */
+      transition: all 0.2s; backdrop-filter: blur(5px);
+    }
+    .language-icon:hover { background: rgba(255,255,255,0.1); }
+
+    .popup-overlay {
+      display: none; position: fixed; inset: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000;
+    }
+    .popup-content {
+      background: rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 12px; text-align: center;
+      max-width: 250px; width: 80%; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);
+    }
+    .popup-content h4 { margin-bottom: 12px; font-size: 16px; font-weight: bold; }
+    .popup-options { display: flex; justify-content: space-around; margin-bottom: 12px; }
+    .popup-options button {
+      flex: 1; margin: 0 4px; padding: 6px 0; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05);
+      color: #fff; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px); font-size: 13px;
+    }
+    .popup-options button.selected { background: #fff; color: #000; }
+    .popup-actions { display: flex; justify-content: space-around; }
+    .popup-actions button {
+      flex: 1; margin: 0 4px; padding: 6px 0; border-radius: 8px; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px); font-size: 13px;
+    }
+    .popup-actions .cancel-btn { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; }
+    .popup-actions .cancel-btn:hover { background: rgba(255,255,255,0.15); }
+    .popup-actions .yes-btn { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; }
+    .popup-actions .yes-btn:hover { background: #fff; color: #000; }
+
+    @media(max-width:600px){
+      .company-name{ font-size: 50px; }
+      .platform{ font-size: 18px; }
+      h3, .income-heading{ font-size: 24px; }
+      p, ul li{ font-size: 14px; }
+      .register-button{ font-size: 18px; padding: 10px 60px; }
+      #registerRules h1{ font-size: 40px; }
+      .back-button{ font-size: 16px; padding: 8px 30px; }
+      .language-icon{ font-size: 12px; padding: 6px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Dashboard -->
+    <div id="dashboard">
+      <div class="company-name">RYVON</div>
+      <div class="platform" id="platformText">International Business Platform</div>
+      <h3 id="companyInfoHeading">Company Info</h3>
+      <p id="founder"><strong>Founder:</strong> Saiful Islam Sir</p>
+      <p id="founded"><strong>Founded:</strong> May 8, 2000</p>
+      <p id="headOffice"><strong>Head Office:</strong> Bangladesh</p>
+      <h3 class="income-heading" id="incomeOpportunitiesHeading">Income Opportunities</h3>
+      <ul id="incomeList"></ul>
+
+      <a class="register-button" id="registerNowButton" onclick="showRegisterRules()">Register Now</a>
+
+      <!-- Dashboard Language control -->
+      <div class="language-icon" id="dashboardLanguageBtn" onclick="showPopup('dashboard')">🌐 <span id="dashboardLanguageIconText">Language</span></div>
+    </div>
+
+    <!-- Register Rules -->
+    <div id="registerRules">
+      <h1 id="registerRulesTitle">REGISTER RULES</h1>
+      <p id="rulesContent"></p>
+      <a class="back-button" id="backToDashboardButton" onclick="backToDashboard()">Back to Dashboard</a>
+
+      <!-- Register Rules Language control -->
+      <div class="language-icon" id="rulesLanguageBtn" onclick="showPopup('rules')">🌐 <span id="rulesLanguageIconText">Language</span></div>
+    </div>
+  </div>
+
+  <!-- Language popup (ALWAYS ENGLISH UI) - Unified popup, but tracks source -->
+  <div class="popup-overlay" id="languagePopup">
+    <div class="popup-content">
+      <h4 id="selectLanguageHeading">Select Language</h4>
+      <div class="popup-options">
+        <button id="englishBtn" onclick="chooseLanguage(this)">English</button>
+        <button id="bengaliBtn" onclick="chooseLanguage(this)">Bengali</button>
+      </div>
+      <div class="popup-actions">
+        <button class="cancel-btn" id="cancelButton" onclick="closePopup()">Cancel</button>
+        <button class="yes-btn" id="yesButton" onclick="applyLanguage()">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let dashboardLang = 'en'; // active language for dashboard content
+    let rulesLang = 'en';     // active language for register rules content
+    let currentPopupSource = ''; // To track which dashboard opened the popup
+
+    // Income List content
+    const incomeLists = {
+      en: [
+        "Welcome Offer – 500 Taka",
+        "Daily Sign-In Bonus – 100 Taka",
+        "Mobile Recharge",
+        "Watching Ads",
+        "Typing Jobs",
+        "Solving Quizzes & Math Problems",
+        "Product Reselling & Vendor Income",
+        "Gmail Sell",
+        "Facebook Sell",
+        "Selling Drive Offers",
+        "Video Editing & Photo Editing",
+        "AI Tools",
+        "Data Entry",
+        "Website Ad Marketing",
+        "Active Auto Income",
+        "Passive Income via Team Building",
+        "5 Ranks Leadership Bonus",
+        "User Fund Support"
+      ],
+      bn: [
+        "স্বাগতম অফার – ৫০০ টাকা",
+        "ডেইলি সাইন ইন বোনাস – ১০০ টাকা",
+        "মোবাইল রিচার্জ",
+        "বিজ্ঞাপন দেখে আয়",
+        "টাইপিং জব",
+        "কুইজ ও অংক সমাধান করে ইনকাম",
+        "প্রডাক্ট রিসেলিং ও ভেন্ডরশিপ ইনকাম",
+        "Gmail সেল",
+        "Facebook সেল",
+        "ড্রাইভিং অফার বিক্রি",
+        "ভিডিও এডিটিং এবং ফটো এডিটিং ইনকাম",
+        "এআই টুলস",
+        "ডাটা এন্ট্রি আয়",
+        "ওয়েবসাইট বিজ্ঞাপন মার্কেটিং",
+        "একটিভ অটো ইনকাম",
+        "টিম গঠন করে প্যাসিভ ইনকাম",
+        "৫ র‍্যাঙ্ক লিডারশিপ বোনাস",
+        "ইউজার ফান্ড সাপোর্ট"
+      ]
+    };
+
+    // Register Rules (English)
+    const registerRulesContent_en = `Welcome!<br>
+We warmly welcome you to our company. Your journey to success begins here.<br><br>
+If the leader from whom you learned about our company registers you, then:<br>
+- They will receive a 500 Taka bonus,<br>
+- And you will receive 250 Taka from your leader.<br><br>
+This is completely free income, through which you can earn 1,000 to 2,000 Taka right from the start.<br><br>
+So don’t wait—register now and take your first step toward success.<br><br>
+<strong>Your Leader:</strong> Ariyan Khan<br>
+To register, please provide your name, age, profession, and mobile number to your leader with full details.<br>
+Therefore, please contact your leader.<br>
+Afterwards, your leader will register you as a member of our company, and you can start your journey to earning.<br><br>
+Thank you!`;
+
+    // Register Rules (Bengali - only the specified parts are translated)
+    const registerRulesContent_bn = `স্বাগতম!<br>
+আমাদের কোম্পানিতে আপনাকে উষ্ণ অভ্যর্থনা জানাই। আপনার সাফল্যের যাত্রা এখান থেকেই শুরু হচ্ছে।<br><br>
+আপনি যে লিডারের কাছ থেকে আমাদের কোম্পানি সম্পর্কে জেনেছেন, যদি তিনি আপনাকে নিবন্ধন করেন, তাহলে:<br>
+- তিনি ৫০০ টাকা বোনাস পাবেন,<br>
+- এবং আপনি আপনার লিডারের কাছ থেকে ২৫০ টাকা পাবেন।<br><br>
+এটি সম্পূর্ণ ফ্রি ইনকাম, যার মাধ্যমে আপনি শুরু থেকেই ১,০০০ থেকে ২,০০০ টাকা আয় করতে পারবেন।<br><br>
+সুতরাং আর অপেক্ষা করবেন না—এখনই নিবন্ধন করুন এবং সাফল্যের দিকে আপনার প্রথম পদক্ষেপ নিন।<br><br>
+<strong>আপনার লিডার:</strong> Ariyan Khan<br>
+নিবন্ধন করতে, অনুগ্রহ করে আপনার নাম, বয়স, পেশা এবং মোবাইল নম্বর আপনার লিডারকে সম্পূর্ণ বিস্তারিত সহ দিন।<br>
+অতএব, আপনার লিডারের সাথে যোগাযোগ করুন।<br>
+এরপর, আপনার লিডার আপনাকে আমাদের কোম্পানির সদস্য হিসাবে নিবন্ধন করবেন এবং আপনি আপনার আয়ের যাত্রা শুরু করতে পারবেন।<br><br>
+ধন্যবাদ!`;
+
+
+    // All other static texts
+    const textContent = {
+      en: {
+        platform: "International Business Platform",
+        companyInfoHeading: "Company Info",
+        founder: "<strong>Founder:</strong> Saiful Islam Sir",
+        founded: "<strong>Founded:</strong> May 8, 2000",
+        headOffice: "<strong>Head Office:</strong> Bangladesh",
+        incomeOpportunitiesHeading: "Income Opportunities",
+        registerNowButton: "Register Now",
+        backToDashboardButton: "Back to Dashboard"
+      },
+      // These will not be used directly for Bengali, as specific elements are forced to English
+      bn: {
+        platform: "International Business Platform",
+        companyInfoHeading: "Company Info",
+        founder: "<strong>Founder:</strong> Saiful Islam Sir",
+        founded: "<strong>Founded:</strong> May 8, 2000",
+        headOffice: "<strong>Head Office:</strong> Bangladesh",
+        incomeOpportunitiesHeading: "Income Opportunities",
+        registerNowButton: "Register Now",
+        backToDashboardButton: "Back to Dashboard"
+      }
+    };
+
+    function updateDashboardContent(lang) {
+      // Dashboard content
+      document.getElementById('platformText').textContent = textContent[lang].platform;
+      document.getElementById('companyInfoHeading').textContent = textContent[lang].companyInfoHeading;
+      document.getElementById('founder').innerHTML = textContent[lang].founder;
+      document.getElementById('founded').innerHTML = textContent[lang].founded;
+      document.getElementById('headOffice').innerHTML = textContent[lang].headOffice;
+      document.getElementById('incomeOpportunitiesHeading').textContent = textContent[lang].incomeOpportunitiesHeading;
+      document.getElementById('registerNowButton').textContent = textContent[lang].registerNowButton;
+
+      const ul = document.getElementById('incomeList');
+      ul.innerHTML = '';
+      incomeLists[lang].forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        ul.appendChild(li);
+      });
+
+      // Dashboard language icon text (always English)
+      document.getElementById('dashboardLanguageIconText').textContent = "Language";
+    }
+
+    function updateRegisterRulesContent(lang) {
+      // Register Rules content
+      document.getElementById('registerRulesTitle').textContent = "REGISTER RULES"; // Always English
+      if (lang === 'bn') {
+        document.getElementById('rulesContent').innerHTML = registerRulesContent_bn;
+      } else {
+        document.getElementById('rulesContent').innerHTML = registerRulesContent_en;
+      }
+      document.getElementById('backToDashboardButton').textContent = textContent[lang].backToDashboardButton; // Always English for button
+
+      // Register Rules language icon text (always English)
+      document.getElementById('rulesLanguageIconText').textContent = "Language";
+    }
+
+    function showRegisterRules() {
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('registerRules').style.display = 'block';
+      updateRegisterRulesContent(rulesLang); // Update rules content with its own language setting
+    }
+
+    function backToDashboard() {
+      document.getElementById('dashboard').style.display = 'block';
+      document.getElementById('registerRules').style.display = 'none';
+      updateDashboardContent(dashboardLang); // Update dashboard content with its own language setting
+    }
+
+    /* Language Popup */
+    const popupBg = document.getElementById('languagePopup');
+    const englishBtn = document.getElementById('englishBtn');
+    const bengaliBtn = document.getElementById('bengaliBtn');
+
+    let currentPopupSelectedLang = 'en';
+
+    function showPopup(source) {
+      currentPopupSource = source;
+      popupBg.style.display = 'flex';
+
+      // Set initial selection based on the source dashboard's current language
+      const langToSelect = (source === 'dashboard' ? dashboardLang : rulesLang);
+      currentPopupSelectedLang = langToSelect; // Store for when 'Yes' is clicked
+
+      englishBtn.classList.remove('selected');
+      bengaliBtn.classList.remove('selected');
+      if (langToSelect === 'en') {
+        englishBtn.classList.add('selected');
+      } else {
+        bengaliBtn.classList.add('selected');
+      }
+
+      // ensure popup labels are EN (defensive)
+      document.getElementById('selectLanguageHeading').textContent = "Select Language";
+      document.getElementById('cancelButton').textContent = "Cancel";
+      document.getElementById('yesButton').textContent = "Yes";
+      englishBtn.textContent = "English";
+      bengaliBtn.textContent = "Bengali";
+    }
+
+    function closePopup() {
+      popupBg.style.display = 'none';
+    }
+
+    function chooseLanguage(btn) {
+      currentPopupSelectedLang = (btn.id === 'englishBtn') ? 'en' : 'bn';
+      englishBtn.classList.remove('selected');
+      bengaliBtn.classList.remove('selected');
+      btn.classList.add('selected');
+    }
+
+    function applyLanguage() {
+      if (currentPopupSource === 'dashboard') {
+        dashboardLang = currentPopupSelectedLang;
+        updateDashboardContent(dashboardLang);
+      } else if (currentPopupSource === 'rules') {
+        rulesLang = currentPopupSelectedLang;
+        updateRegisterRulesContent(rulesLang);
+      }
+      closePopup();
+    }
+
+    window.onload = function () {
+      updateDashboardContent(dashboardLang);
+      updateRegisterRulesContent(rulesLang); // Also update rules content on load, even if hidden
+    };
+  </script>
+</body>
+</html>
